@@ -19,21 +19,37 @@ asmlinkage long sys_get_elapsed_time(void)
 
     set_fs(KERNEL_DS);                                                  /* Set addr_limit for read data into kernel buffer */
     Input = ksys_open("/proc/1/stat", O_RDONLY, 0);                     /* Open stat file to read start time of the process */
+    
+    if(Input >= 0)
+    {
+        ksys_read(Input, buffer_stat, 400);                                 /* Read file descriptor into the buffer */
+        sscanf(buffer_stat, "%lld %c %s %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %llu", dummy,dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, &p_start_time);                     /* Read file descriptor into the buffer start time gives in clockticks */
 
-    ksys_read(Input, buffer_stat, 400);                                 /* Read file descriptor into the buffer */
-    sscanf(buffer_stat, "%lld %c %s %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %lld %llu", dummy,dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, dummy, &p_start_time);                     /* Read file descriptor into the buffer start time gives in clockticks */
+        ksys_close(Input);                                                  /* Close file */
+    }
 
-    ksys_close(Input);                                                  /* Close file */
+    else
+    {
+        printk("Failed to open");
+    }
+
     set_fs(old_fs);                                                     /* Get back old addr_limit */
-  
     set_fs(KERNEL_DS);                                                  /* Set addr_limit for read data into kernel buffer */
 
     Proc_Uptime = ksys_open("/proc/uptime", O_RDONLY, 0);               /* Open uptime file to read uptime of the system */
 
-    ksys_read(Proc_Uptime, buffer_uptime, 8);                           /* Read file descriptor into the buffer */
-    sscanf(buffer_uptime, "%lds", &sec);                                /* Read file descriptor into the buffer start time gives in seconds */
+    if(Proc_Uptime >= 0)
+    {
+        ksys_read(Proc_Uptime, buffer_uptime, 8);                           /* Read file descriptor into the buffer */
+        sscanf(buffer_uptime, "%lds", &sec);                                /* Read file descriptor into the buffer start time gives in seconds */
 
-    ksys_close(Proc_Uptime);                                            /* Close file */
+        ksys_close(Proc_Uptime);                                            /* Close file */
+    }
+
+    else
+    {
+        printk("Failed to open");
+    }
     set_fs(old_fs);                                                     /* Get back old addr_limit */
 
     e_sec = sec - p_start_time/ticks;                                   /* Calculate elapsed time by substracting start time from uptime */             
