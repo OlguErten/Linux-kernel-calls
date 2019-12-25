@@ -1,0 +1,2 @@
+build:
+	gcc Get_Elapsed_Time.c && ./a.out && ps -p 1 -o etimes
